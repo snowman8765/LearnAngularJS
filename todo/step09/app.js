@@ -1,120 +1,190 @@
-angular.module('App', ['LocationBar'])
-.service('todos', ['$rootScope', '$filter', function ($scope, $filter) {
-  var list = [];
+"use strict";
 
-  $scope.$watch(function () {
-    return list;
-  }, function (value) {
-    $scope.$broadcast('change:list', value);
-  }, true);
+const app = angular.module("App", ["LocationBar"]);
 
-  var where = $filter('filter');
+class TodoService {
+  constructor($rootScope, $filter){
+    console.log("TodoService");
+    this.where = $filter("filter");
+    this.done = { done: true };
+    this.remaining = { done: false };
+    
+    this.$rootScope = $rootScope;
+    this.filter = {
+      done: this.done,
+      remaining: this.remaining
+    };
+    this.list = [];
+    
+    let self = this;
+    this.$rootScope.$watch(function () {
+      return self.list;
+    }, function (value) {
+      self.$rootScope.$broadcast("change:list", value);
+    }, true);
+    
+    TodoService.$inject = ["$rootScope", "$filter"];
+  }
 
-  var done = { done: true };
-  var remaining = { done: false };
-
-  this.filter = {
-    done: done,
-    remaining: remaining
+  getDone() {
+    return this.where(this.list, this.done);
   };
 
-  this.getDone = function () {
-    return where(list, done);
-  };
-
-  this.add = function (title) {
-    list.push({
+  add(title) {
+    this.list.push({
       title: title,
       done: false
     });
   };
 
-  this.remove = function (currentTodo) {
-    list = where(list, function (todo) {
+  remove(currentTodo) {
+    this.list = this.where(this.list, function (todo) {
       return currentTodo !== todo;
     });
   };
 
-  this.removeDone = function () {
-    list = where(list, remaining);
+  removeDone() {
+    this.list = this.where(this.list, this.remaining);
   };
 
-  this.changeState = function (state) {
-    angular.forEach(list, function (todo) {
+  changeState(state) {
+    angular.forEach(this.list, function (todo) {
       todo.done = state;
     });
   };
-}])
-.controller('RegisterController', ['$scope', 'todos', function ($scope, todos) {
-  $scope.newTitle = '';
+};
+app.service("todos", TodoService);
 
-  $scope.addTodo = function () {
-    todos.add($scope.newTitle);
-    $scope.newTitle = '';
+class RegisterController {
+  constructor(todos){
+    console.log("RegisterController");
+    this.newTitle = "zzz";
+    this.todos = todos;
+    console.log(todos);
+    this.addTodo();
+    
+    RegisterController.$inject = ["todos"];
+  }
+  
+  addTodo() {
+    console.log("addTodo");
+    this.todos.add(this.newTitle);
+    this.newTitle = "";
+  }
+};
+app.component("register", {
+  controller: RegisterController
+});
+
+class ToolbarController {
+  constructor($scope, todos){
+    console.log("ToolbarController");
+    this.$scope = $scope;
+    this.todos = todos;
+    this.filter = todos.filter;
+    
+    let self = this;
+    this.$scope.$on("change:list", function (evt, list) {
+      let length = list.length;
+      let doneCount = self.todos.getDone().length;
+      console.log(list);
+
+      self.allCount = length;
+      self.doneCount = doneCount;
+      self.remainingCount = length - doneCount;
+    });
+    
+    ToolbarController.$inject = ["$scope", "todos"];
+  }
+
+  checkAll() {
+    this.todos.changeState(!!this.remainingCount);
   };
-}])
-.controller('ToolbarController', ['$scope', 'todos', function ($scope, todos) {
-  $scope.filter = todos.filter;
 
-  $scope.$on('change:list', function (evt, list) {
-    var length = list.length;
-    var doneCount = todos.getDone().length;
-
-    $scope.allCount = length;
-    $scope.doneCount = doneCount;
-    $scope.remainingCount = length - doneCount;
-  });
-
-  $scope.checkAll = function () {
-    todos.changeState(!!$scope.remainingCount);
+  changeFilter(filter) {
+    this.$scope.$emit("change:filter", filter);
   };
 
-  $scope.changeFilter = function (filter) {
-    $scope.$emit('change:filter', filter);
+  removeDoneTodo() {
+    this.todos.removeDone();
+  };
+};
+app.component("toolbar", {
+  controller: ToolbarController
+});
+
+class TodoListController {
+  constructor($scope, todos){
+    console.log("TodoListController");
+    this.$scope = $scope;
+    this.todos = todos;
+    this.originalTitle = null;
+    this.editing = null;
+    this.todoList = null;
+    
+    let self = this;
+    this.$scope.$on("change:list", function (evt, list) {
+      self.todoList = list;
+    });
+    
+    TodoListController.$inject = ["$scope", "todos"];
+  }
+
+  editTodo(todo) {
+    this.originalTitle = todo.title;
+    this.editing = todo;
   };
 
-  $scope.removeDoneTodo = function () {
-    todos.removeDone();
-  };
-}])
-.controller('TodoListController', ['$scope', 'todos', function ($scope, todos) {
-  $scope.$on('change:list', function (evt, list) {
-    $scope.todoList = list;
-  });
-
-  var originalTitle;
-
-  $scope.editing = null;
-
-  $scope.editTodo = function (todo) {
-    originalTitle = todo.title;
-    $scope.editing = todo;
-  };
-
-  $scope.doneEdit = function (todoForm) {
+  doneEdit(todoForm) {
     if (todoForm.$invalid) {
-      $scope.editing.title = originalTitle;
+      this.editing.title = this.originalTitle;
     }
-    $scope.editing = originalTitle = null;
+    this.editing = this.originalTitle = null;
   };
 
-  $scope.removeTodo = function (todo) {
-    todos.remove(todo);
+  removeTodo(todo) {
+    this.todos.remove(todo);
   };
-}])
-.controller('MainController', ['$scope', function ($scope) {
-  $scope.currentFilter = null;
+};
+app.component("todoList", {
+  controller: TodoListController
+});
 
-  $scope.$on('change:filter', function (evt, filter) {
-    $scope.currentFilter = filter;
-  });
-}])
-.directive('mySelect', [function () {
-  return function (scope, $el, attrs) {
-    scope.$watch(attrs.mySelect, function (val) {
+class MainController {
+  constructor($scope){
+    console.log("MainController");
+    this.$scope = $scope;
+    this.currentFilter = null;
+
+    let self = this;
+    this.$scope.$on("change:filter", function (evt, filter) {
+      self.currentFilter = filter;
+    });
+    
+    MainController.$inject = ["$scope"];
+  }
+};
+app.component("main", {
+  controller: MainController
+});
+
+class MySelectController {
+  constructor($scope, $el, attrs){
+    console.log("MySelectController");
+    this.$scope = $scope;
+    this.$el = $el;
+    this.attrs = attrs;
+    
+    let self = this;
+    this.$scope.$watch(this.attrs.mySelect, function (val) {
       if (val) {
-        $el[0].select();
+        self.$el[0].select();
       }
     });
-  };
-}]);
+    
+    MainController.$inject = ["$scope", "$el", "attrs"];
+  }
+};
+app.component("mySelect", {
+  controller: MySelectController
+});
