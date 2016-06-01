@@ -4,16 +4,13 @@ const app = angular.module("App", ["LocationBar"]);
 
 class TodoService {
   constructor($rootScope, $filter){
-    console.log("TodoService");
     this.where = $filter("filter");
-    this.done = { done: true };
-    this.remaining = { done: false };
+    this.all = {done:undefined};
+    this.done = {done:true};
+    this.remaining = {done:false};
+    this.currentFilter = this.all;
     
     this.$rootScope = $rootScope;
-    this.filter = {
-      done: this.done,
-      remaining: this.remaining
-    };
     this.list = [];
     
     let self = this;
@@ -52,46 +49,44 @@ class TodoService {
       todo.done = state;
     });
   };
-};
+}
 app.service("todos", TodoService);
 
 class RegisterController {
   constructor(todos){
-    console.log("RegisterController");
     this.newTitle = "zzz";
     this.todos = todos;
-    console.log(todos);
-    this.addTodo();
     
     RegisterController.$inject = ["todos"];
   }
   
   addTodo() {
-    console.log("addTodo");
     this.todos.add(this.newTitle);
     this.newTitle = "";
+    return false;
   }
-};
+}
 app.component("register", {
-  controller: RegisterController
+  controller: RegisterController,
+  templateUrl: "template/register.html"
 });
 
 class ToolbarController {
   constructor($scope, todos){
-    console.log("ToolbarController");
     this.$scope = $scope;
     this.todos = todos;
-    this.filter = todos.filter;
     
     let self = this;
     this.$scope.$on("change:list", function (evt, list) {
       let length = list.length;
       let doneCount = self.todos.getDone().length;
-      console.log(list);
 
       self.allCount = length;
       self.doneCount = doneCount;
       self.remainingCount = length - doneCount;
+    });
+    this.$scope.$on("change:filter", function (evt, filter) {
+      self.todos.currentFilter = filter;
     });
     
     ToolbarController.$inject = ["$scope", "todos"];
@@ -108,14 +103,14 @@ class ToolbarController {
   removeDoneTodo() {
     this.todos.removeDone();
   };
-};
+}
 app.component("toolbar", {
-  controller: ToolbarController
+  controller: ToolbarController,
+  templateUrl: "template/toolbar.html"
 });
 
 class TodoListController {
   constructor($scope, todos){
-    console.log("TodoListController");
     this.$scope = $scope;
     this.todos = todos;
     this.originalTitle = null;
@@ -125,6 +120,9 @@ class TodoListController {
     let self = this;
     this.$scope.$on("change:list", function (evt, list) {
       self.todoList = list;
+    });
+    this.$scope.$on("change:filter", function (evt, filter) {
+      self.todos.currentFilter = filter;
     });
     
     TodoListController.$inject = ["$scope", "todos"];
@@ -145,32 +143,14 @@ class TodoListController {
   removeTodo(todo) {
     this.todos.remove(todo);
   };
-};
-app.component("todoList", {
-  controller: TodoListController
-});
-
-class MainController {
-  constructor($scope){
-    console.log("MainController");
-    this.$scope = $scope;
-    this.currentFilter = null;
-
-    let self = this;
-    this.$scope.$on("change:filter", function (evt, filter) {
-      self.currentFilter = filter;
-    });
-    
-    MainController.$inject = ["$scope"];
-  }
-};
-app.component("main", {
-  controller: MainController
+}
+app.component("todolist", {
+  controller: TodoListController,
+  templateUrl: "template/todoList.html"
 });
 
 class MySelectController {
   constructor($scope, $el, attrs){
-    console.log("MySelectController");
     this.$scope = $scope;
     this.$el = $el;
     this.attrs = attrs;
@@ -184,7 +164,7 @@ class MySelectController {
     
     MainController.$inject = ["$scope", "$el", "attrs"];
   }
-};
+}
 app.component("mySelect", {
   controller: MySelectController
 });

@@ -10,98 +10,19 @@
   <body ng-app="App">
     <div class="location-bar"></div>
 
-    <main>
-      <div class="container">
-        <div class="page-header">
-          <h1>ToDo</h1>
-        </div>
-
-        <register>
-          <p>{{$ctrl.newTitle}}</p>
-          <form class="input-group input-group-lg"
-                ng-submit="$ctrl.addTodo()">
-            <input type="text"
-                  required
-                  placeholder="新しい要件を入力"
-                  class="form-control input-lg"
-                  ng-model="$ctrl.newTitle">
-            <span class="input-group-btn">
-              <button class="btn btn-default"
-                      type="submit">追加</button>
-            </span>
-          </form>
-        </register>
-
-        <hr>
-
-        <toolbar>
-          <div class="btn-toolbar">
-            <div class="btn-group">
-              <button class="btn btn-success"
-                      ng-click="$ctrl.checkAll()">全て完了/未了</button>
-            </div>
-            <div class="btn-group">
-              <button class="btn btn-default"
-                      ng-class="{active: !$ctrl.currentFilter}"
-                      ng-click="$ctrl.changeFilter()">
-                      全部
-                      <span class="badge">{{ $ctrl.allCount }}</span>
-              </button>
-              <button class="btn btn-default"
-                      ng-class="{active: $ctrl.currentFilter == $ctrl.filter.remaining}"
-                      ng-click="$ctrl.changeFilter($ctrl.filter.remaining)">
-                      未了
-                      <span class="badge">{{ $ctrl.remainingCount }}</span>
-              </button>
-              <button class="btn btn-default"
-                      ng-class="{active: $ctrl.currentFilter == $ctrl.filter.done}"
-                      ng-click="$ctrl.changeFilter($ctrl.filter.done)">
-                      完了
-                      <span class="badge">{{ $ctrl.doneCount }}</span>
-              </button>
-            </div>
-            <div class="btn-group">
-              <button class="btn btn-danger"
-                      ng-click="$ctrl.removeDoneTodo()">完了アイテムを全て削除</button>
-            </div>
-          </div>
-        </toolbar>
-
-        <hr>
-
-        <todoList>
-          <ul class="list-unstyled">
-            <li class="todo-item"
-                ng-repeat="todo in $ctrl.todoList | filter:currentFilter"
-                ng-class="{done: todo.done, $ctrl.editing: todo == $ctrl.editing}">
-              <form class="input-group input-group-lg"
-                    name="todoForm"
-                    ng-submit="$ctrl.doneEdit(todoForm)">
-                <label class="input-group-addon">
-                  <input type="checkbox" class="state" ng-model="todo.done">
-                </label>
-                <p class="form-control input-lg todo-title"
-                  ng-hide="todo == $ctrl.editing"
-                  ng-dblclick="$ctrl.editTodo(todo)">{{ todo.title }}</p>
-                <input type="text"
-                      required
-                      class="form-control input-lg"
-                      ng-show="todo == $ctrl.editing"
-                      ng-model="todo.title"
-                      my-select="todo == $ctrl.editing"
-                      ng-blur="$ctrl.doneEdit(todoForm)">
-                <span class="input-group-btn del-btn"
-                      ng-if="todo != $ctrl.editing">
-                  <button type="reset"
-                          class="btn btn-danger"
-                          ng-click="$ctrl.removeTodo(todo)">削除</button>
-                </span>
-              </form>
-            </li>
-          </ul>
-        </todoList>
+    <div class="container">
+      <div class="page-header">
+        <h1>ToDo</h1>
       </div>
-    </main>
+
+      <register></register>
+
+      <hr>
+      <toolbar></toolbar>
+
+      <hr>
+      <todolist></todolist>
+    </div>
 
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.6/angular.min.js"></script>
     <script src="../../assets/js/location.js"></script>

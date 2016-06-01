@@ -1,0 +1,30 @@
+<ul class="list-unstyled">
+  <p>{{$ctrl.todos.currentFilter}}</p>
+  <li class="todo-item"
+      ng-repeat="todo in $ctrl.todoList | filter:$ctrl.todos.currentFilter"
+      ng-class="{done: todo.done, editing: todo == $ctrl.editing}">
+    <form class="input-group input-group-lg"
+          name="todoForm"
+          ng-submit="$ctrl.doneEdit(todoForm)">
+      <label class="input-group-addon">
+        <input type="checkbox" class="state" ng-model="todo.done">
+      </label>
+      <p class="form-control input-lg todo-title"
+        ng-hide="todo == $ctrl.editing"
+        ng-dblclick="$ctrl.editTodo(todo)">{{ todo.title }}</p>
+      <input type="text"
+            required
+            class="form-control input-lg"
+            ng-show="todo == $ctrl.editing"
+            ng-model="todo.title"
+            my-select="todo == $ctrl.editing"
+            ng-blur="$ctrl.doneEdit(todoForm)">
+      <span class="input-group-btn del-btn"
+            ng-if="todo != $ctrl.editing">
+        <button type="reset"
+                class="btn btn-danger"
+                ng-click="$ctrl.removeTodo(todo)">削除</button>
+      </span>
+    </form>
+  </li>
+</ul>

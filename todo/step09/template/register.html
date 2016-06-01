@@ -1,0 +1,12 @@
+<form class="input-group input-group-lg"
+      ng-submit="$ctrl.addTodo()">
+  <input type="text"
+        required
+        placeholder="新しい要件を入力"
+        class="form-control input-lg"
+        ng-model="$ctrl.newTitle">
+  <span class="input-group-btn">
+    <button class="btn btn-default"
+            type="submit">追加</button>
+  </span>
+</form>
