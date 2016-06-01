@@ -54,7 +54,7 @@ app.service("todos", TodoService);
 
 class RegisterController {
   constructor(todos){
-    this.newTitle = "zzz";
+    this.newTitle = "";
     this.todos = todos;
     
     RegisterController.$inject = ["todos"];

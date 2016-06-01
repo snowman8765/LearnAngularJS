@@ -1,5 +1,4 @@
 <ul class="list-unstyled">
-  <p>{{$ctrl.todos.currentFilter}}</p>
   <li class="todo-item"
       ng-repeat="todo in $ctrl.todoList | filter:$ctrl.todos.currentFilter"
       ng-class="{done: todo.done, editing: todo == $ctrl.editing}">
